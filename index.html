@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Rangkaian Listrik Seri dan Paralel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .circuits-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .circuits-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .circuit-box {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .circuit-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .circuit-title {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .circuit-svg {
+            width: 100%;
+            height: 350px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .wire {
+            stroke: #333;
+            stroke-width: 3;
+            fill: none;
+        }
+
+        .wire.active {
+            stroke: #ffd700;
+            filter: drop-shadow(0 0 5px #ffd700);
+        }
+
+        .battery {
+            fill: #333;
+        }
+
+        .switch-base {
+            fill: #666;
+            stroke: #333;
+            stroke-width: 2;
+        }
+
+        .switch-lever {
+            fill: #999;
+            stroke: #333;
+            stroke-width: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .switch-lever:hover {
+            fill: #777;
+        }
+
+        .bulb {
+            fill: #e0e0e0;
+            stroke: #333;
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+
+        .bulb.on {
+            fill: #ffd700;
+            filter: drop-shadow(0 0 20px #ffd700);
+        }
+
+        .bulb-filament {
+            stroke: #666;
+            stroke-width: 1;
+            fill: none;
+        }
+
+        .bulb-filament.on {
+            stroke: #ff6b00;
+        }
+
+        .current-flow {
+            stroke: #ffd700;
+            stroke-width: 2;
+            fill: none;
+            opacity: 0;
+            stroke-dasharray: 5, 5;
+        }
+
+        .current-flow.active {
+            opacity: 1;
+            animation: flow 1s linear infinite;
+        }
+
+        @keyframes flow {
+            to {
+                stroke-dashoffset: -10;
+            }
+        }
+
+        .controls {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .control-title {
+            text-align: center;
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .status-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .status-item.active {
+            background: #fff3cd;
+            border-color: #ffd700;
+        }
+
+        .status-label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .status-value {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .status-value.on {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+
+        .info-box h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #333;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Simulasi Rangkaian Listrik Seri dan Paralel ⚡</h1>
+        
+        <div class="circuits-container">
+            <!-- Rangkaian Seri dengan 3 Lampu -->
+            <div class="circuit-box">
+                <h2 class="circuit-title">Rangkaian Seri (3 Lampu)</h2>
+                <svg class="circuit-svg" viewBox="0 0 400 350">
+                    <!-- Baterai -->
+                    <g id="battery-seri">
+                        <rect x="20" y="160" width="30" height="30" class="battery"/>
+                        <text x="35" y="180" text-anchor="middle" fill="white" font-size="12">+</text>
+                        <rect x="20" y="150" width="10" height="10" class="battery"/>
+                        <rect x="40" y="150" width="10" height="10" class="battery"/>
+                    </g>
+                    
+                    <!-- Kabel -->
+                    <path id="wire1-seri" class="wire" d="M 50 175 L 100 175"/>
+                    <path id="wire2-seri" class="wire" d="M 150 175 L 180 175"/>
+                    <path id="wire3-seri" class="wire" d="M 220 175 L 250 175"/>
+                    <path id="wire4-seri" class="wire" d="M 290 175 L 320 175"/>
+                    <path id="wire5-seri" class="wire" d="M 360 175 L 380 175 L 380 280 L 50 280 L 50 205"/>
+                    
+                    <!-- Saklar -->
+                    <g id="switch-seri">
+                        <rect x="100" y="165" width="50" height="20" class="switch-base" rx="5"/>
+                        <circle id="switch-lever-seri" cx="125" cy="175" r="8" class="switch-lever" data-circuit="seri"/>
+                        <text x="125" y="155" text-anchor="middle" font-size="12" fill="#333">Saklar</text>
+                    </g>
+                    
+                    <!-- Lampu 1 -->
+                    <g id="bulb1-seri">
+                        <circle cx="200" cy="175" r="20" class="bulb"/>
+                        <path d="M 188 175 Q 200 167 212 175 M 188 175 Q 200 183 212 175" class="bulb-filament"/>
+                        <text x="200" y="150" text-anchor="middle" font-size="10" fill="#333">L1</text>
+                    </g>
+                    
+                    <!-- Lampu 2 -->
+                    <g id="bulb2-seri">
+                        <circle cx="270" cy="175" r="20" class="bulb"/>
+                        <path d="M 258 175 Q 270 167 282 175 M 258 175 Q 270 183 282 175" class="bulb-filament"/>
+                        <text x="270" y="150" text-anchor="middle" font-size="10" fill="#333">L2</text>
+                    </g>
+                    
+                    <!-- Lampu 3 -->
+                    <g id="bulb3-seri">
+                        <circle cx="340" cy="175" r="20" class="bulb"/>
+                        <path d="M 328 175 Q 340 167 352 175 M 328 175 Q 340 183 352 175" class="bulb-filament"/>
+                        <text x="340" y="150" text-anchor="middle" font-size="10" fill="#333">L3</text>
+                    </g>
+                    
+                    <!-- Arus Listrik -->
+                    <path id="current-seri" class="current-flow" d="M 50 175 L 100 175 L 150 175 L 180 175 L 200 175 L 220 175 L 250 175 L 270 175 L 290 175 L 320 175 L 340 175 L 360 175 L 380 175 L 380 280 L 50 280 L 50 205"/>
+                </svg>
+            </div>
+            
+            <!-- Rangkaian Paralel dengan 3 Lampu -->
+            <div class="circuit-box">
+                <h2 class="circuit-title">Rangkaian Paralel (3 Lampu)</h2>
+                <svg class="circuit-svg" viewBox="0 0 400 350">
+                    <!-- Baterai -->
+                    <g id="battery-parallel">
+                        <rect x="20" y="160" width="30" height="30" class="battery"/>
+                        <text x="35" y="180" text-anchor="middle" fill="white" font-size="12">+</text>
+                        <rect x="20" y="150" width="10" height="10" class="battery"/>
+                        <rect x="40" y="150" width="10" height="10" class="battery"/>
+                    </g>
+                    
+                    <!-- Kabel Utama -->
+                    <path id="wire-main1-parallel" class="wire" d="M 50 175 L 100 175"/>
+                    <path id="wire-main2-parallel" class="wire" d="M 350 175 L 380 175 L 380 280 L 50 280 L 50 205"/>
+                    
+                    <!-- Cabang 1 (Atas) -->
+                    <path id="wire-branch1-parallel" class="wire" d="M 100 175 L 100 80 L 130 80"/>
+                    <path id="wire-branch2-parallel" class="wire" d="M 220 80 L 350 80 L 350 175"/>
+                    
+                    <!-- Cabang 2 (Tengah) -->
+                    <path id="wire-branch3-parallel" class="wire" d="M 100 175 L 100 150 L 130 150"/>
+                    <path id="wire-branch4-parallel" class="wire" d="M 220 150 L 350 150 L 350 175"/>
+                    
+                    <!-- Cabang 3 (Bawah) -->
+                    <path id="wire-branch5-parallel" class="wire" d="M 100 175 L 100 220 L 130 220"/>
+                    <path id="wire-branch6-parallel" class="wire" d="M 220 220 L 350 220 L 350 175"/>
+                    
+                    <!-- Saklar Cabang 1 -->
+                    <g id="switch1-parallel">
+                        <rect x="130" y="70" width="40" height="20" class="switch-base" rx="5"/>
+                        <circle id="switch-lever1-parallel" cx="145" cy="80" r="6" class="switch-lever" data-circuit="parallel1"/>
+                        <text x="150" y="65" text-anchor="middle" font-size="10" fill="#333">S1</text>
+                    </g>
+                    
+                    <!-- Saklar Cabang 2 -->
+                    <g id="switch2-parallel">
+                        <rect x="130" y="140" width="40" height="20" class="switch-base" rx="5"/>
+                        <circle id="switch-lever2-parallel" cx="145" cy="150" r="6" class="switch-lever" data-circuit="parallel2"/>
+                        <text x="150" y="135" text-anchor="middle" font-size="10" fill="#333">S2</text>
+                    </g>
+                    
+                    <!-- Saklar Cabang 3 -->
+                    <g id="switch3-parallel">
+                        <rect x="130" y="210" width="40" height="20" class="switch-base" rx="5"/>
+                        <circle id="switch-lever3-parallel" cx="145" cy="220" r="6" class="switch-lever" data-circuit="parallel3"/>
+                        <text x="150" y="205" text-anchor="middle" font-size="10" fill="#333">S3</text>
+                    </g>
+                    
+                    <!-- Lampu 1 -->
+                    <g id="bulb1-parallel">
+                        <circle cx="175" cy="80" r="18" class="bulb"/>
+                        <path d="M 165 80 Q 175 74 185 80 M 165 80 Q 175 86 185 80" class="bulb-filament"/>
+                        <text x="175" y="55" text-anchor="middle" font-size="10" fill="#333">L1</text>
+                    </g>
+                    
+                    <!-- Lampu 2 -->
+                    <g id="bulb2-parallel">
+                        <circle cx="175" cy="150" r="18" class="bulb"/>
+                        <path d="M 165 150 Q 175 144 185 150 M 165 150 Q 175 156 185 150" class="bulb-filament"/>
+                        <text x="175" y="125" text-anchor="middle" font-size="10" fill="#333">L2</text>
+                    </g>
+                    
+                    <!-- Lampu 3 -->
+                    <g id="bulb3-parallel">
+                        <circle cx="175" cy="220" r="18" class="bulb"/>
+                        <path d="M 165 220 Q 175 214 185 220 M 165 220 Q 175 226 185 220" class="bulb-filament"/>
+                        <text x="175" y="245" text-anchor="middle" font-size="10" fill="#333">L3</text>
+                    </g>
+                    
+                    <!-- Arus Listrik -->
+                    <path id="current1-parallel" class="current-flow" d="M 100 175 L 100 80 L 130 80 L 175 80 L 220 80 L 350 80 L 350 175"/>
+                    <path id="current2-parallel" class="current-flow" d="M 100 175 L 100 150 L 130 150 L 175 150 L 220 150 L 350 150 L 350 175"/>
+                    <path id="current3-parallel" class="current-flow" d="M 100 175 L 100 220 L 130 220 L 175 220 L 220 220 L 350 220 L 350 175"/>
+                </svg>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <h2 class="control-title">Status Rangkaian</h2>
+            <div class="status-grid">
+                <div class="status-item" id="status-switch-seri">
+                    <div class="status-label">Saklar Seri</div>
+                    <div class="status-value" id="switch-value-seri">OFF</div>
+                </div>
+                <div class="status-item" id="status-bulb1-seri">
+                    <div class="status-label">Lampu L1</div>
+                    <div class="status-value" id="bulb-value1-seri">Mati</div>
+                </div>
+                <div class="status-item" id="status-bulb2-seri">
+                    <div class="status-label">Lampu L2</div>
+                    <div class="status-value" id="bulb-value2-seri">Mati</div>
+                </div>
+                <div class="status-item" id="status-bulb3-seri">
+                    <div class="status-label">Lampu L3</div>
+                    <div class="status-value" id="bulb-value3-seri">Mati</div>
+                </div>
+                <div class="status-item" id="status-switch1-parallel">
+                    <div class="status-label">Saklar 1</div>
+                    <div class="status-value" id="switch-value1-parallel">OFF</div>
+                </div>
+                <div class="status-item" id="status-bulb1-parallel">
+                    <div class="status-label">Lampu 1</div>
+                    <div class="status-value" id="bulb-value1-parallel">Mati</div>
+                </div>
+                <div class="status-item" id="status-switch2-parallel">
+                    <div class="status-label">Saklar 2</div>
+                    <div class="status-value" id="switch-value2-parallel">OFF</div>
+                </div>
+                <div class="status-item" id="status-bulb2-parallel">
+                    <div class="status-label">Lampu 2</div>
+                    <div class="status-value" id="bulb-value2-parallel">Mati</div>
+                </div>
+                <div class="status-item" id="status-switch3-parallel">
+                    <div class="status-label">Saklar 3</div>
+                    <div class="status-value" id="switch-value3-parallel">OFF</div>
+                </div>
+                <div class="status-item" id="status-bulb3-parallel">
+                    <div class="status-label">Lampu 3</div>
+                    <div class="status-value" id="bulb-value3-parallel">Mati</div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <h3>Petunjuk Penggunaan:</h3>
+                <p>
+                    <strong>Rangkaian Seri:</strong> Satu saklar mengontrol ketiga lampu (L1, L2, L3). 
+                    Dalam rangkaian seri, arus listrik mengalir melalui setiap lampu secara berurutan. 
+                    Jika saklar dimatikan, semua lampu akan padam bersamaan.<br><br>
+                    <strong>Rangkaian Paralel:</strong> Setiap lampu memiliki saklar sendiri (S1, S2, S3). 
+                    Anda dapat mengontrol setiap lampu secara independen. Ini menunjukkan keunggulan rangkaian paralel 
+                    di mana satu lampu dapat menyala sementara yang lain mati.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State untuk setiap rangkaian
+        const circuitStates = {
+            seri: {
+                switchOn: false,
+                bulbOn: false
+            },
+            parallel1: {
+                switchOn: false,
+                bulbOn: false
+            },
+            parallel2: {
+                switchOn: false,
+                bulbOn: false
+            },
+            parallel3: {
+                switchOn: false,
+                bulbOn: false
+            }
+        };
+
+        // Fungsi untuk mengupdate tampilan rangkaian
+        function updateCircuit(circuitType) {
+            const state = circuitStates[circuitType];
+            
+            if (circuitType === 'seri') {
+                updateSeriesCircuit(state);
+            } else if (circuitType.startsWith('parallel')) {
+                const bulbNumber = circuitType.slice(-1);
+                updateParallelCircuit(state, bulbNumber);
+            }
+        }
+
+        // Fungsi untuk update rangkaian seri dengan 3 lampu
+        function updateSeriesCircuit(state) {
+            // Update saklar
+            const switchLever = document.getElementById('switch-lever-seri');
+            const switchValue = document.getElementById('switch-value-seri');
+            const switchStatus = document.getElementById('status-switch-seri');
+            
+            if (state.switchOn) {
+                switchLever.setAttribute('cx', '135');
+                switchValue.textContent = 'ON';
+                switchValue.classList.add('on');
+                switchStatus.classList.add('active');
+            } else {
+                switchLever.setAttribute('cx', '115');
+                switchValue.textContent = 'OFF';
+                switchValue.classList.remove('on');
+                switchStatus.classList.remove('active');
+            }
+            
+            // Update semua lampu dan kabel
+            const bulbs = document.querySelectorAll('#bulb1-seri .bulb, #bulb2-seri .bulb, #bulb3-seri .bulb');
+            const filaments = document.querySelectorAll('#bulb1-seri .bulb-filament, #bulb2-seri .bulb-filament, #bulb3-seri .bulb-filament');
+            const wires = document.querySelectorAll('#wire1-seri, #wire2-seri, #wire3-seri, #wire4-seri, #wire5-seri');
+            const current = document.getElementById('current-seri');
+            
+            // Update status untuk setiap lampu
+            for (let i = 1; i <= 3; i++) {
+                const bulbValue = document.getElementById(`bulb-value${i}-seri`);
+                const bulbStatus = document.getElementById(`status-bulb${i}-seri`);
+                
+                if (state.switchOn) {
+                    bulbValue.textContent = 'Menyala';
+                    bulbValue.classList.add('on');
+                    bulbStatus.classList.add('active');
+                } else {
+                    bulbValue.textContent = 'Mati';
+                    bulbValue.classList.remove('on');
+                    bulbStatus.classList.remove('active');
+                }
+            }
+            
+            if (state.switchOn) {
+                bulbs.forEach(bulb => bulb.classList.add('on'));
+                filaments.forEach(filament => filament.classList.add('on'));
+                wires.forEach(wire => wire.classList.add('active'));
+                current.classList.add('active');
+                circuitStates.seri.bulbOn = true;
+            } else {
+                bulbs.forEach(bulb => bulb.classList.remove('on'));
+                filaments.forEach(filament => filament.classList.remove('on'));
+                wires.forEach(wire => wire.classList.remove('active'));
+                current.classList.remove('active');
+                circuitStates.seri.bulbOn = false;
+            }
+        }
+
+        // Fungsi untuk update rangkaian paralel
+        function updateParallelCircuit(state, bulbNumber) {
+            // Update saklar
+            const switchLever = document.getElementById(`switch-lever${bulbNumber}-parallel`);
+            const switchValue = document.getElementById(`switch-value${bulbNumber}-parallel`);
+            const switchStatus = document.getElementById(`status-switch${bulbNumber}-parallel`);
+            
+            if (state.switchOn) {
+                switchLever.setAttribute('cx', parseInt(switchLever.getAttribute('cx')) + 10);
+                switchValue.textContent = 'ON';
+                switchValue.classList.add('on');
+                switchStatus.classList.add('active');
+            } else {
+                switchLever.setAttribute('cx', parseInt(switchLever.getAttribute('cx')) - 10);
+                switchValue.textContent = 'OFF';
+                switchValue.classList.remove('on');
+                switchStatus.classList.remove('active');
+            }
+            
+            // Update lampu dan kabel
+            const bulb = document.querySelector(`#bulb${bulbNumber}-parallel .bulb`);
+            const filament = document.querySelector(`#bulb${bulbNumber}-parallel .bulb-filament`);
+            const wires = document.querySelectorAll(`#wire-branch${(parseInt(bulbNumber) * 2 - 1)}-parallel, #wire-branch${(parseInt(bulbNumber) * 2)}-parallel`);
+            const current = document.getElementById(`current${bulbNumber}-parallel`);
+            const bulbValue = document.getElementById(`bulb-value${bulbNumber}-parallel`);
+            const bulbStatus = document.getElementById(`status-bulb${bulbNumber}-parallel`);
+            
+            if (state.switchOn) {
+                bulb.classList.add('on');
+                filament.classList.add('on');
+                wires.forEach(wire => wire.classList.add('active'));
+                current.classList.add('active');
+                bulbValue.textContent = 'Menyala';
+                bulbValue.classList.add('on');
+                bulbStatus.classList.add('active');
+                circuitStates[`parallel${bulbNumber}`].bulbOn = true;
+            } else {
+                bulb.classList.remove('on');
+                filament.classList.remove('on');
+                wires.forEach(wire => wire.classList.remove('active'));
+                current.classList.remove('active');
+                bulbValue.textContent = 'Mati';
+                bulbValue.classList.remove('on');
+                bulbStatus.classList.remove('active');
+                circuitStates[`parallel${bulbNumber}`].bulbOn = false;
+            }
+            
+            // Update kabel utama jika ada lampu yang menyala
+            const mainWires = document.querySelectorAll('#wire-main1-parallel, #wire-main2-parallel');
+            const anyBulbOn = Object.keys(circuitStates).filter(key => key.startsWith('parallel')).some(key => circuitStates[key].bulbOn);
+            
+            if (anyBulbOn) {
+                mainWires.forEach(wire => wire.classList.add('active'));
+            } else {
+                mainWires.forEach(wire => wire.classList.remove('active'));
+            }
+        }
+
+        // Event listener untuk saklar
+        document.querySelectorAll('.switch-lever').forEach(switchLever => {
+            switchLever.addEventListener('click', function() {
+                const circuitType = this.getAttribute('data-circuit');
+                circuitStates[circuitType].switchOn = !circuitStates[circuitType].switchOn;
+                updateCircuit(circuitType);
+            });
+        });
+
+        // Inisialisasi tampilan
+        updateCircuit('seri');
+        updateCircuit('parallel1');
+        updateCircuit('parallel2');
+        updateCircuit('parallel3');
+    </script>
+</body>
+</html>
